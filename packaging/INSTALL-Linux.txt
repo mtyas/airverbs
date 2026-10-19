@@ -1,0 +1,9 @@
+Airverbs for Linux (x64)
+
+Copy each plugin to its folder:
+  Airverbs.vst3 -> ~/.vst3/
+  Airverbs.clap -> ~/.clap/
+  Airverbs.lv2  -> ~/.lv2/
+  Airverbs      -> anywhere (standalone; chmod +x if needed)
+
+The GUI needs OpenGL 3.2. User presets live in ~/.config/Airverbs/Presets

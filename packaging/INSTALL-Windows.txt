@@ -1,0 +1,11 @@
+Airverbs for Windows (x64)
+
+Copy each plugin to its folder:
+  Airverbs.vst3 -> C:\Program Files\Common Files\VST3\
+  Airverbs.clap -> C:\Program Files\Common Files\CLAP\
+  Airverbs.exe  -> anywhere (standalone)
+
+Then rescan plugins in your DAW. Windows SmartScreen may warn because the build is unsigned:
+choose "More info" -> "Run anyway" for the standalone app.
+
+User presets live in %APPDATA%\Airverbs\Presets

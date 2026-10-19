@@ -1,0 +1,100 @@
+name: Build Airverbs
+
+# Every push / PR builds and tests on macOS, Windows and Linux.
+# Pushing a tag like v0.77 additionally publishes a GitHub Release with the three zips.
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: macOS,   os: macos-14,     extra: "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64", gen: "-G Ninja" }
+          - { name: Windows, os: windows-2022, extra: "",                                        gen: "" }
+          - { name: Linux,   os: ubuntu-22.04, extra: "",                                        gen: "-G Ninja" }
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libasound2-dev libjack-jackd2-dev libx11-dev libxext-dev libxrandr-dev \
+            libxinerama-dev libxcursor-dev libxcomposite-dev libfreetype6-dev libfontconfig1-dev libgl1-mesa-dev libglu1-mesa-dev
+
+      - name: macOS dependencies
+        if: runner.os == 'macOS'
+        run: brew install ninja || true
+
+      - name: Fetch third-party sources
+        shell: bash
+        run: ./tools/fetch_deps.sh
+
+      - name: Configure
+        shell: bash
+        run: |
+          EXTRA="${{ matrix.extra }}"
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.gen }} ${EXTRA:+"$EXTRA"}
+
+      - name: Build
+        run: cmake --build build --config Release --parallel --target Airverbs_All Airverbs_CLAP AirverbsTests
+
+      - name: DSP tests
+        shell: bash
+        run: |
+          T=$(find build -type f \( -name AirverbsTests -o -name AirverbsTests.exe \) | head -1)
+          "$T" network
+
+      - name: Package
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          [[ "$GITHUB_REF" == refs/tags/* ]] || VERSION="dev-${GITHUB_SHA::7}"
+          OUT="Airverbs-${VERSION}-${{ matrix.name }}"
+          mkdir -p "dist/$OUT"
+          A=build/Airverbs_artefacts/Release
+          for f in VST3/Airverbs.vst3 CLAP/Airverbs.clap AU/Airverbs.component LV2/Airverbs.lv2 Standalone/Airverbs.app Standalone/Airverbs.exe Standalone/Airverbs; do
+            [ -e "$A/$f" ] && cp -R "$A/$f" "dist/$OUT/"
+          done
+          cp LICENSE THIRD_PARTY_NOTICES.md README.md "dist/$OUT/"
+          cp packaging/INSTALL-${{ matrix.name }}.txt "dist/$OUT/INSTALL.txt"
+          cd dist
+          if [ "$RUNNER_OS" = "Windows" ]; then 7z a -tzip "$OUT.zip" "$OUT" > /dev/null; else zip -qry "$OUT.zip" "$OUT"; fi
+          echo "ZIP=dist/$OUT.zip" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Airverbs-${{ matrix.name }}
+          path: ${{ env.ZIP }}
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Airverbs ${{ github.ref_name }}
+          files: dist/*.zip
+          generate_release_notes: true
+          body: |
+            Airverbs ${{ github.ref_name }} by mtyas: a constellation of all 53 Airwindows reverbs.
+
+            * **macOS** (universal arm64 + Intel): VST3, AU, CLAP, Standalone. The builds are not notarised, so see INSTALL.txt.
+            * **Windows** (x64): VST3, CLAP, Standalone.
+            * **Linux** (x64): VST3, CLAP, LV2, Standalone.

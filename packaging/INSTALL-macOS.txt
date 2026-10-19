@@ -1,0 +1,16 @@
+Airverbs for macOS (universal: Apple Silicon + Intel)
+
+Copy each plugin to its folder (create the folder if needed):
+  Airverbs.component -> ~/Library/Audio/Plug-Ins/Components/
+  Airverbs.vst3      -> ~/Library/Audio/Plug-Ins/VST3/
+  Airverbs.clap      -> ~/Library/Audio/Plug-Ins/CLAP/
+  Airverbs.app       -> /Applications/ (standalone)
+
+These builds are not signed or notarised by Apple. If macOS says the plugin "is damaged" or
+"cannot be checked", remove the download quarantine flag in Terminal, then rescan in your DAW:
+  xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/Airverbs.component
+  xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/Airverbs.vst3
+  xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/CLAP/Airverbs.clap
+  xattr -dr com.apple.quarantine /Applications/Airverbs.app
+
+User presets live in ~/Library/Audio/Presets/Airverbs

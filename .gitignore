@@ -1,0 +1,9 @@
+build/
+build-*/
+third_party/
+.DS_Store
+*.blend1
+# local reference copy; the build reads the one fetched from the Airwindows repo
+/Airwindopedia.txt
+__pycache__/
+*.pyc
