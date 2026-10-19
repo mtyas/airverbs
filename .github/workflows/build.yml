@@ -31,7 +31,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build libasound2-dev libjack-jackd2-dev libx11-dev libxext-dev libxrandr-dev \
-            libxinerama-dev libxcursor-dev libxcomposite-dev libfreetype6-dev libfontconfig1-dev libgl1-mesa-dev libglu1-mesa-dev
+            libxinerama-dev libxcursor-dev libxcomposite-dev libxi-dev libxrender-dev libfreetype6-dev libfontconfig1-dev libgl1-mesa-dev libglu1-mesa-dev
 
       - name: macOS dependencies
         if: runner.os == 'macOS'

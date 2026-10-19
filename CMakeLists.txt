@@ -21,6 +21,7 @@ target_include_directories (AirverbsEngines
     PUBLIC  source/airwindows/shim source/airwindows
     PRIVATE third_party/airwindows/plugins/LinuxVST/src)
 set_target_properties (AirverbsEngines PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_compile_definitions (AirverbsEngines PRIVATE _USE_MATH_DEFINES) # M_PI on MSVC
 if (MSVC)
     target_compile_options (AirverbsEngines PRIVATE /w /O2 /bigobj /Zc:preprocessor)
 else()

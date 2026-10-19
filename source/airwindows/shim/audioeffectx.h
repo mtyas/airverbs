@@ -6,6 +6,9 @@
 #define __audioeffect__
 #endif
 
+#ifndef _USE_MATH_DEFINES
+ #define _USE_MATH_DEFINES // Airwindows uses M_PI; MSVC only defines it on request
+#endif
 #include <cmath>
 #include <math.h>
 #include <cstdint>
